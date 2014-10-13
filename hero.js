@@ -124,7 +124,7 @@ var stats = {
 	escaping: false,
 	escapeRoute: [],
 	lastMove: 'Stay',
-	hp: 1
+	hitpoints: 1
 };
 
 var move = function( gameData, helpers ) {
@@ -135,40 +135,30 @@ var move = function( gameData, helpers ) {
 	|*| see him driven before us & to hear the lamentation of his women |*|
 	\*//////////////////////////////////////////////////////////////////\*/
 
-	function escape() {
+	function _escape() {
 		// devise and execute a short-term emergency juke... if and when 
 		// our hero is followed by a stronger enemy, haul ass to a heal
 		// potion, trying to position the enemy adjacent to our hero but 
 		// the heal potion adjacent to our hero :)
+		return false;
 	};
 
 	// quantify our immediate environment
 	var justis = gameData.activeHero;
-	hp = justis.health;
+	stats.hitpoints = justis.health;
 	// check describes the immediacy of kinetic warfare
 	var check = false;
 
+	var validDirections = ['North', 'East', 'South', 'West'];
+
 	// every soldier a sensor!
-	var thing = helpers.findNearestObjectDirectionAndDistance();
-	var thingStats = [ thing.distance, thing.direction ];
-
-	var healPotion = helpers.findNearestHealthWell();
-	var healPotionStats = [ healPotion.distance, healPotion.direction ];
-
-	var enemy = helpers.findNearestEnemy();
-	var enemyStats = [ enemy.distance, enemy.direction ];
-
-	var friend = helpers.findNearestTeamMember();
-	var friendStats = [ friend.distance, friend.direction ];
-
-	var fodder = helpers.findNearestWeakerEnemy();
-	var fodderStats = [ fodder.distance, fodder.direction ];
-
-	var unownedMine = helpers.findNearestUnownedDiamondMine();
-	var unownedMineStats = [ unownedMine.distance, unownedMine.direction ];
-
-	var enemyMine = helpers.findNearestNonTeamDiamondMine();
-	var enemyMineStats =  [ enemyMine.distance, enemyMine.direction ];
+	//var thing = helpers.findNearestObjectDirectionAndDistance(gameData) || false;
+	var healPotion = helpers.findNearestHealthWell(gameData) || false;
+	var enemy = helpers.findNearestEnemy(gameData) || false;
+	var friend = helpers.findNearestTeamMember(gameData) || false;
+	var fodder = helpers.findNearestWeakerEnemy(gameData) || false;
+	var unownedMine = helpers.findNearestUnownedDiamondMine(gameData) || false;
+	var enemyMine = helpers.findNearestNonTeamDiamondMine(gameData) || false;
 
 	/*\//////////////////////////////////////////////////////////////////*\
 	|*| going against every bone in my combat infantry veteran body, we |*|
@@ -177,15 +167,28 @@ var move = function( gameData, helpers ) {
 	|*| isolated), since that's what douchebags would do to win a fight |*|
 	\*//////////////////////////////////////////////////////////////////\*/
 	
+	// if nearest object is grave and hero is adjacent, rob it!
+	//if (thing && thing.type === 'Bones') return thing.direction;
+	if (healPotion.distance === 1 && stats.hitPoints < 100) return stats.lastMove = healPotion;
 	// if we are hurt bad, head to a heal potion
-	if (hitpoints < 40) return lastMove = healPotion.direction;
+	if (healPotion && stats.hitpoints < 40) return stats.lastMove = healPotion;
 	// throow a free heal at your buddy
-	if (friend.distance === 1 && lastMove !== 'Stay') return lastMove = friend.direction; 
+	if (friend && friend.distance === 1 && lastMove !== 'Stay') return stats.lastMove = friend; 
 	// if the nearest enemy is weaker, go slaughter him and reave his soul
-	if (enemy === fodder) return lastMove = fodder.direction;
+	if (fodder && enemy === fodder) return stats.lastMove = fodder;
 	// otherwise head to the nearest unowned mine, or the nearest enemy mine
-	return lastMove = (unownedMine.distance < enemyMine.distance) : unownedMine.direction : enemyMine.direction;
-	if (null) return 'Stay';
+	if (unownedMine && enemyMine && unownedMine.distance < enemyMine.distance) {
+		return stats.lastMove = unownedMine;
+	} else if (enemyMine) {
+		return stats.lastMove = enemyMine;
+	} else if (enemy) {
+		return stats.lastMove = enemy;
+	} else if (friend) {
+		return stats.lastMove = friend;
+	} else {
+		return stats.lastMove = 'Stay';
+	}
+	return stats.lastMove = 'South';
 };
 
 // // The "Safe Diamond Miner"
