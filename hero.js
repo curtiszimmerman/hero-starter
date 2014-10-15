@@ -1,3 +1,137 @@
+
+/*\///////////////////////////////////////////////////////////////*\
+|*|                                                              |*|
+|*|            ---<( www.javascriptbattle.com )>---              |*|
+|*|                                                              |*|
+|*|                 curtis.zimmerman@gmail.com                   |*|
+\*///////////////////////////////////////////////////////////////\*/
+
+// we don't want to write a sloppy weenie of a warrior...
+"use strict";
+
+var stats = {
+	check: false,
+	fleeing: false,
+	strategy: {
+		current: false
+	},
+	target: {
+		current: false
+	},
+	last: 'Stay',
+	hitpoints: 1
+};
+
+var move = function( gameData, helpers ) {
+	/*\//////////////////////////////////////////////////////////////////*\
+	|*| seriously, our default network is to 1) find weaker enemies and |*|
+	|*| destroy them, 2) find and claim diamond mines, 3) find and rob  |*|
+	|*| graves. well, our default network is to defeat our enemies, to  |*|
+	|*| see them driven before us and hear the lamentation of his women |*|
+	\*//////////////////////////////////////////////////////////////////\*/
+
+	function _check() {
+		// check our immediate area for an appealing target, otherwise 
+		// flee, fuck your buddy, or move towards an appealing target
+		return false;
+	};
+
+	function _escape() {
+		// devise and execute a short-term emergency juke... if and when 
+		// our hero is followed by a stronger enemy, haul ass to a heal
+		// potion, trying to position the enemy adjacent to our hero but 
+		// the heal potion adjacent to our hero :)
+		return false;
+	};
+
+	function _planMove() {
+		return false;
+	};
+
+	function _target() {
+		// find something outside of our immediate area
+		return false;
+	};
+
+	// we prefer the following activities:
+	// 1) slaughter
+	// 2) mines, unclaimed
+	// 3) mines, enemy
+	// 4) priestly duties
+	// 5) grave-robbing as a crime of opportunity
+	// 6) healing as a long-term strategy for NOT DYING
+
+	// example action trees:
+	// a) target weak enemy, fight, run to nearest healing potion, return for scalp
+	// b) on way to conquer mine, rob a grave
+	// c) heal friend while he fights two baddies
+	// d) run from groups of baddies until you get one by himself
+
+	// quantify our immediate environment
+	var justis = gameData.activeHero;
+	stats.hitpoints = justis.health;
+	// check describes the immediacy of kinetic warfare
+	var check = false;
+
+	var validDirections = ['North', 'East', 'South', 'West'];
+	var validMoves = ['North', 'East', 'South', 'West', 'Stay'];
+
+	// every soldier a sensor!
+	var healPotion = helpers.findNearestHealthWell(gameData) || false;
+	var enemy = helpers.findNearestEnemy(gameData) || false;
+	var friend = helpers.findNearestTeamMember(gameData) || false;
+	var fodder = helpers.findNearestWeakerEnemy(gameData) || false;
+	var unownedMine = helpers.findNearestUnownedDiamondMine(gameData) || false;
+	var enemyMine = helpers.findNearestNonTeamDiamondMine(gameData) || false;
+	var bones = helpers.findNearestObjectDirectionAndDistance(gameData. board, justis, function(boardTile) {
+		if (boardTile.type === 'Bones') {
+			return true;
+		}
+	}) || false;
+
+	/*\//////////////////////////////////////////////////////////////////*\
+	|*| going against every bone in my combat infantry veteran body, we |*|
+	|*| will try to put a teammate between our hero and the nearest     |*|
+	|*| enemy unless that enemy is weaker than us (and more or less     |*|
+	|*| isolated), since that's what douchebags would do to win a fight |*|
+	\*//////////////////////////////////////////////////////////////////\*/
+	
+	// if nearest object is grave and hero is adjacent, rob it!
+	if (bones && bones.distance === 1) {
+		return stats.last = bones;
+	} else if (stats.hitPoints < 100 && healPotion.distance === 1) {
+		return stats.last = healPotion;
+	// if we are hurt bad, head to a heal potion
+	} else if (stats.hitpoints < 40) {
+		return stats.last = healPotion;
+	// throow a free heal at your buddy
+	} else if (friend && friend.distance === 1 && last !== 'Stay') {
+		return stats.last = friend; 
+	// if the nearest enemy is weaker, go slaughter him and reave his soul
+	} else if (fodder && enemy === fodder) {
+		return stats.last = fodder;
+	// otherwise head to the nearest unowned mine, or the nearest enemy mine
+	} else if (unownedMine && enemyMine && unownedMine.distance < enemyMine.distance) {
+		return stats.last = unownedMine;
+	} else if (enemyMine) {
+		return stats.last = enemyMine;
+	} else if (enemy) {
+		return stats.last = enemy;
+	} else if (friend) {
+		return stats.last = friend;
+	} else {
+		return stats.last = 'Stay';
+	}
+	return stats.last = 'South';
+};
+
+// Export the move function here
+module.exports = move;
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 /* 
 
 	The only function that is required in this file is the "move" function
@@ -29,6 +163,35 @@
 
 //TL;DR: If you are new, just uncomment the 'move' function that you think sounds like fun!
 //       (and comment out all the other move functions)
+
+// // The "Safe Diamond Miner"
+/*var move = function(gameData, helpers) {
+	var myHero = gameData.activeHero;
+
+	//Get stats on the nearest health well
+	var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
+		if (boardTile.type === 'HealthWell') {
+			return true;
+		}
+	});
+	var distanceToHealthWell = healthWellStats.distance;
+	var directionToHealthWell = healthWellStats.direction;
+	
+
+	if (myHero.health < 40) {
+		//Heal no matter what if low health
+		return directionToHealthWell;
+	} else if (myHero.health < 100 && distanceToHealthWell === 1) {
+		//Heal if you aren't full health and are close to a health well already
+		return directionToHealthWell;
+	} else if (myHero.health < 100 && distanceToHealthWell === 1) {
+		//Heal if you aren't full health and are close to a health well already
+		return directionToHealthWell;
+	} else {
+		//If healthy, go capture a diamond mine!
+		return helpers.findNearestNonTeamDiamondMine(gameData);
+	}
+};*/
 
 // // The "Priest"
 // // This hero will heal nearby friendly champions.
@@ -115,110 +278,3 @@
 //     return helpers.findNearestUnownedDiamondMine(gameData);
 //   }
 // };
-
-// we don't want to write a sloppy weenie of a warrior...
-"use strict";
-
-var stats = {
-	check: false,
-	escaping: false,
-	escapeRoute: [],
-	lastMove: 'Stay',
-	hitpoints: 1
-};
-
-var move = function( gameData, helpers ) {
-	/*\//////////////////////////////////////////////////////////////////*\
-	|*| seriously, our default network is to 1) find weaker enemies and |*|
-	|*| destroy them, 2) find and claim diamond mines, 3) find and rob  |*|
-	|*| graves. well, our default network is to defeat our enemies, to  |*|
-	|*| see him driven before us & to hear the lamentation of his women |*|
-	\*//////////////////////////////////////////////////////////////////\*/
-
-	function _escape() {
-		// devise and execute a short-term emergency juke... if and when 
-		// our hero is followed by a stronger enemy, haul ass to a heal
-		// potion, trying to position the enemy adjacent to our hero but 
-		// the heal potion adjacent to our hero :)
-		return false;
-	};
-
-	// quantify our immediate environment
-	var justis = gameData.activeHero;
-	stats.hitpoints = justis.health;
-	// check describes the immediacy of kinetic warfare
-	var check = false;
-
-	var validDirections = ['North', 'East', 'South', 'West'];
-
-	// every soldier a sensor!
-	//var thing = helpers.findNearestObjectDirectionAndDistance(gameData) || false;
-	var healPotion = helpers.findNearestHealthWell(gameData) || false;
-	var enemy = helpers.findNearestEnemy(gameData) || false;
-	var friend = helpers.findNearestTeamMember(gameData) || false;
-	var fodder = helpers.findNearestWeakerEnemy(gameData) || false;
-	var unownedMine = helpers.findNearestUnownedDiamondMine(gameData) || false;
-	var enemyMine = helpers.findNearestNonTeamDiamondMine(gameData) || false;
-
-	/*\//////////////////////////////////////////////////////////////////*\
-	|*| going against every bone in my combat infantry veteran body, we |*|
-	|*| will try to put a teammate between our hero and the nearest     |*|
-	|*| enemy unless that enemy is weaker than us (and more or less     |*|
-	|*| isolated), since that's what douchebags would do to win a fight |*|
-	\*//////////////////////////////////////////////////////////////////\*/
-	
-	// if nearest object is grave and hero is adjacent, rob it!
-	//if (thing && thing.type === 'Bones') return thing.direction;
-	if (healPotion.distance === 1 && stats.hitPoints < 100) return stats.lastMove = healPotion;
-	// if we are hurt bad, head to a heal potion
-	if (healPotion && stats.hitpoints < 40) return stats.lastMove = healPotion;
-	// throow a free heal at your buddy
-	if (friend && friend.distance === 1 && lastMove !== 'Stay') return stats.lastMove = friend; 
-	// if the nearest enemy is weaker, go slaughter him and reave his soul
-	if (fodder && enemy === fodder) return stats.lastMove = fodder;
-	// otherwise head to the nearest unowned mine, or the nearest enemy mine
-	if (unownedMine && enemyMine && unownedMine.distance < enemyMine.distance) {
-		return stats.lastMove = unownedMine;
-	} else if (enemyMine) {
-		return stats.lastMove = enemyMine;
-	} else if (enemy) {
-		return stats.lastMove = enemy;
-	} else if (friend) {
-		return stats.lastMove = friend;
-	} else {
-		return stats.lastMove = 'Stay';
-	}
-	return stats.lastMove = 'South';
-};
-
-// // The "Safe Diamond Miner"
-/*var move = function(gameData, helpers) {
-	var myHero = gameData.activeHero;
-
-	//Get stats on the nearest health well
-	var healthWellStats = helpers.findNearestObjectDirectionAndDistance(gameData.board, myHero, function(boardTile) {
-		if (boardTile.type === 'HealthWell') {
-			return true;
-		}
-	});
-	var distanceToHealthWell = healthWellStats.distance;
-	var directionToHealthWell = healthWellStats.direction;
-	
-
-	if (myHero.health < 40) {
-		//Heal no matter what if low health
-		return directionToHealthWell;
-	} else if (myHero.health < 100 && distanceToHealthWell === 1) {
-		//Heal if you aren't full health and are close to a health well already
-		return directionToHealthWell;
-	} else if (myHero.health < 100 && distanceToHealthWell === 1) {
-		//Heal if you aren't full health and are close to a health well already
-		return directionToHealthWell;
-	} else {
-		//If healthy, go capture a diamond mine!
-		return helpers.findNearestNonTeamDiamondMine(gameData);
-	}
-};*/
-
-// Export the move function here
-module.exports = move;

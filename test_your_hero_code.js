@@ -32,21 +32,36 @@ var enemyMoveFunction = function(gameData, helpers) {
   return choices[Math.floor(Math.random()*4)];
 }
 
+// just a wrapper around JavaScript's RNG
+function _random( max ) {
+  return Math.floor(Math.random() * max);
+};
+
 //Makes a new game with a 5x5 board
-var game = new Game(5);
+var boardSize = 6;
+var game = new Game(boardSize);
 
 //Add a health well in the middle of the board
-game.addHealthWell(2,2);
+var numWells = _random(6) + 1;
+var wells = [];
+for (var i=0; i<numWells; i++) {
+  var x = _random(boardSize);
+  var y = _random(boardSize);
+  game.addHealthWell(x, y);
+}
 
 //Add diamond mines on either side of the health well
-game.addDiamondMine(2,1);
-game.addDiamondMine(2,3);
+var numMines = _random(6) + 1;
+for (var i=0; i<numMines; i++) {
+  var x = _random(boardSize);
+  var y = _random(boardSize);
+  game.addDiamondMine(x, y);
+}
 
 //Add your hero in the top left corner of the map (team 0)
-game.addHero(0, 0, 'MyHero', 0);
-
+game.addHero(_random(boardSize), _random(boardSize), 'MyHero', 0);
 //Add an enemy hero in the bottom left corner of the map (team 1)
-game.addHero(4, 4, 'Enemy', 1);
+game.addHero(_random(boardSize), _random(boardSize), 'Enemy', 1);
 
 console.log('About to start the game!  Here is what the board looks like:');
 
@@ -56,7 +71,7 @@ console.log('About to start the game!  Here is what the board looks like:');
 game.board.inspect();
 
 //Play a very short practice game
-var turnsToPlay = 15;
+var turnsToPlay = 25;
 
 for (var i=0; i<turnsToPlay; i++) {
   var hero = game.activeHero;
